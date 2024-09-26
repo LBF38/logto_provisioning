@@ -1,0 +1,28 @@
+logto:
+    url: https://[tenant-id].logto.app/api # your logto instance. Management API endpoint
+    appID: APP_ID # app ID configured for the tool to access M2M API => Better defined in env vars.
+    appSecret: APP_SECRET # same as APP_ID. => Better defined in env vars.
+resources:
+  - baseUrl: https://api.store.io
+    /orders:
+      - read:order
+      - write:order
+      - delete:order
+    /products:
+      - read:product
+      - write:product
+      - delete:product
+roles:
+  order_admin:
+    # the resources/permissions attributions are autocompleted from above definition in resources.
+    https://api.store.io/orders: 
+      - read:order 
+      - write:order
+      - delete:order
+    https://api.store.io/products:
+      - read:product
+  product_admin:
+    https://api.store.io/products:
+      - read:product
+      - write:product
+      - delete:product
