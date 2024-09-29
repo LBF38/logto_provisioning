@@ -1,0 +1,4 @@
+logto:
+    url: https://[tenant-id].logto.app/api # your logto instance. Management API endpoint
+    appID: APP_ID # app ID configured for the tool to access M2M API => Better defined in env vars.
+    appSecret: APP_SECRET # same as APP_ID. => Better defined in env vars.

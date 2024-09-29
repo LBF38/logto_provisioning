@@ -19,5 +19,9 @@ type LogtoRole struct {
 }
 
 func NewConfig(filename string) (LogtoConfig, error) {
-	return LogtoConfig{}, nil
+	return LogtoConfig{
+		url:        "https://[tenant-id].logto.app/api",
+		app_id:     "APP_ID",
+		app_secret: "APP_SECRET",
+	}, nil
 }
