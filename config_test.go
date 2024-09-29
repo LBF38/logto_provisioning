@@ -20,6 +20,15 @@ func TestNewConfig(t *testing.T) {
 				app_secret: "APP_SECRET",
 			},
 		},
+		{
+			name: "Logto config 2",
+			file: "testdata/config_logto_2.yaml",
+			want: LogtoConfig{
+				url:        "https://localhost:3001/api",
+				app_id:     "LOCAL_APP_ID",
+				app_secret: "LOCAL_APP_SECRET",
+			},
+		},
 	}
 
 	for _, tt := range tests {
