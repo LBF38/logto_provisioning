@@ -9,24 +9,28 @@ func TestNewConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		file string
-		want LogtoConfig
+		want Config
 	}{
 		{
 			name: "Logto config",
 			file: "testdata/config_logto.yaml",
-			want: LogtoConfig{
-				url:        "https://[tenant-id].logto.app/api",
-				app_id:     "APP_ID",
-				app_secret: "APP_SECRET",
+			want: Config{
+				Logto: LogtoConfig{
+					Url:       "https://[tenant-id].logto.app/api",
+					AppID:     "APP_ID",
+					AppSecret: "APP_SECRET",
+				},
 			},
 		},
 		{
 			name: "Logto config 2",
 			file: "testdata/config_logto_2.yaml",
-			want: LogtoConfig{
-				url:        "https://localhost:3001/api",
-				app_id:     "LOCAL_APP_ID",
-				app_secret: "LOCAL_APP_SECRET",
+			want: Config{
+				Logto: LogtoConfig{
+					Url:       "https://localhost:3001/api",
+					AppID:     "LOCAL_APP_ID",
+					AppSecret: "LOCAL_APP_SECRET",
+				},
 			},
 		},
 	}

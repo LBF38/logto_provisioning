@@ -1,11 +1,21 @@
 package main
 
+import (
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+)
+
+type Config struct {
+	Logto     LogtoConfig
+	Resources []LogtoResource
+	Roles     []LogtoRole
+}
+
 type LogtoConfig struct {
-	url        string
-	app_id     string
-	app_secret string
-	resources  []LogtoResource
-	roles      []LogtoRole
+	Url       string
+	AppID     string
+	AppSecret string
 }
 
 type LogtoResource struct {
@@ -18,10 +28,15 @@ type LogtoRole struct {
 	permissions []string
 }
 
-func NewConfig(filename string) (LogtoConfig, error) {
-	return LogtoConfig{
-		url:        "https://[tenant-id].logto.app/api",
-		app_id:     "APP_ID",
-		app_secret: "APP_SECRET",
+func NewConfig(filename string) (Config, error) {
+	var k = koanf.New("::")
+	k.Load(file.Provider(filename), yaml.Parser())
+
+	return Config{
+		Logto: LogtoConfig{
+			Url:       k.String("logto::url"),
+			AppID:     k.String("logto::appID"),
+			AppSecret: k.String("logto::appSecret"),
+		},
 	}, nil
 }
