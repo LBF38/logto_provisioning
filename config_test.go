@@ -83,6 +83,55 @@ func TestNewConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Minimal config",
+			file: "testdata/config_minimal.yaml",
+			want: Config{
+				Logto: LogtoConfig{
+					Url:       "https://[tenant-id].logto.app/api",
+					AppID:     "APP_ID",
+					AppSecret: "APP_SECRET",
+				},
+				Resources: []LogtoResource{
+					{
+						BaseUrl: "https://api.store.io",
+						Endpoints: map[string][]string{
+							"/orders": {
+								"read:order",
+								"write:order",
+								"delete:order",
+							},
+							"/products": {
+								"read:product",
+								"write:product",
+								"delete:product",
+							},
+						},
+					},
+				},
+				Roles: []LogtoRole{
+					{
+						"order_admin": map[string][]string{
+							"https://api.store.io/orders": {
+								"read:order",
+								"write:order",
+								"delete:order",
+							},
+							"https://api.store.io/products": {
+								"read:product",
+							},
+						},
+						"product_admin": map[string][]string{
+							"https://api.store.io/products": {
+								"read:product",
+								"write:product",
+								"delete:product",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
