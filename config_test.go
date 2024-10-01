@@ -33,6 +33,29 @@ func TestNewConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Resources config",
+			file: "testdata/config_resources.yaml",
+			want: Config{
+				Resources: []LogtoResource{
+					{
+						BaseUrl: "https://api.store.io",
+						Endpoints: map[string][]string{
+							"/orders": {
+								"read:order",
+								"write:order",
+								"delete:order",
+							},
+							"/products": {
+								"read:product",
+								"write:product",
+								"delete:product",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

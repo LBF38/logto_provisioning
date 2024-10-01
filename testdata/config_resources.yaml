@@ -1,0 +1,11 @@
+resources:
+  - baseUrl: https://api.store.io
+    endpoints:
+      /orders:
+        - read:order
+        - write:order
+        - delete:order
+      /products:
+        - read:product
+        - write:product
+        - delete:product

@@ -19,8 +19,8 @@ type LogtoConfig struct {
 }
 
 type LogtoResource struct {
-	name        string
-	permissions []string
+	BaseUrl   string
+	Endpoints map[string][]string
 }
 
 type LogtoRole struct {
@@ -32,11 +32,11 @@ func NewConfig(filename string) (Config, error) {
 	var k = koanf.New("::")
 	k.Load(file.Provider(filename), yaml.Parser())
 
-	return Config{
-		Logto: LogtoConfig{
-			Url:       k.String("logto::url"),
-			AppID:     k.String("logto::appID"),
-			AppSecret: k.String("logto::appSecret"),
-		},
-	}, nil
+	// log.Println(k.Raw())
+
+	var config Config
+	k.Unmarshal("", &config)
+	// log.Println("config unmarshal: ", config)
+
+	return config, nil
 }
