@@ -1,0 +1,14 @@
+roles:
+  order_admin:
+    # the resources/permissions attributions are autocompleted from above definition in resources.
+    https://api.store.io/orders:
+      - read:order
+      - write:order
+      - delete:order
+    https://api.store.io/products:
+      - read:product
+  product_admin:
+    https://api.store.io/products:
+      - read:product
+      - write:product
+      - delete:product

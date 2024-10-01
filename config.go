@@ -23,10 +23,7 @@ type LogtoResource struct {
 	Endpoints map[string][]string
 }
 
-type LogtoRole struct {
-	name        string
-	permissions []string
-}
+type LogtoRole map[string]map[string][]string
 
 func NewConfig(filename string) (Config, error) {
 	var k = koanf.New("::")

@@ -56,6 +56,33 @@ func TestNewConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Roles config",
+			file: "testdata/config_roles.yaml",
+			want: Config{
+				Roles: []LogtoRole{
+					{
+						"order_admin": map[string][]string{
+							"https://api.store.io/orders": {
+								"read:order",
+								"write:order",
+								"delete:order",
+							},
+							"https://api.store.io/products": {
+								"read:product",
+							},
+						},
+						"product_admin": map[string][]string{
+							"https://api.store.io/products": {
+								"read:product",
+								"write:product",
+								"delete:product",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
