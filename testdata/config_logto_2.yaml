@@ -1,0 +1,4 @@
+logto:
+    url: https://localhost:3001/api # your logto instance. Management API endpoint
+    appID: LOCAL_APP_ID # app ID configured for the tool to access M2M API => Better defined in env vars.
+    appSecret: LOCAL_APP_SECRET # same as APP_ID. => Better defined in env vars.
