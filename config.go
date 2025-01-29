@@ -60,7 +60,7 @@ type AccessTokenResponse struct {
 	Scope       string `json:"scope"`
 }
 
-func (c Config) FetchAccessTokenResponse() (AccessTokenResponse, error) {
+func (c *Config) FetchAccessTokenResponse() (AccessTokenResponse, error) {
 	bodyParams := map[string]string{
 		"grant_type": "client_credentials",
 		"resource":   "https://default.logto.app/api",
@@ -105,3 +105,65 @@ func (c Config) FetchAccessTokenResponse() (AccessTokenResponse, error) {
 
 	return result, nil
 }
+
+func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
+	// Provision resources
+	// for _, resource := range c.Resources {
+	// 	for endpoint, scopes := range resource.Endpoints {
+	// 		// TODO: create resource for each endpoint
+	// 		// TODO: create scopes for each resource
+	// 	}
+	// }
+
+	// Create an API resource
+	bodyData := map[string]string{
+		"tenantId":  "default",
+		"name":      "testing_resource",
+		"indicator": "https://test.io/api",
+	}
+
+	bodyBytes, err := json.Marshal(bodyData)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.Logto.Url+"/api/resources", bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", accessTokenResp.TokenType+" "+accessTokenResp.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected status code: %v\nResponse: %v", resp.StatusCode, resp)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return err
+	}
+	fmt.Print("Created API Resource: ", result)
+
+	// Provision roles
+
+	// Provision users
+
+	return nil
+}
+
+// func (c *Config) provisionResource(accessTokenResp AccessTokenResponse, resource LogtoResource) error {
+
+// 	return nil
+// }

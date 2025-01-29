@@ -21,6 +21,11 @@ func main() {
 	}
 
 	// Interact w/ Management API (provisioning, fetching data, ...)
-	log.Printf("access_token: %v\n", accessTokenResponse.AccessToken)
+	log.Printf("Access Token response: %v\n", accessTokenResponse)
 
+	// Provision Logto
+	err = config.ProvisionLogto(accessTokenResponse)
+	if err != nil {
+		log.Fatalf("Error from provisioning: %v\n", err)
+	}
 }
