@@ -116,10 +116,26 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	// }
 
 	// Create an API resource
+	err := createResource(c, accessTokenResp, "", "", "")
+	if err != nil {
+		return err
+	}
+
+	// Provision roles
+
+	// Provision users
+
+	return nil
+}
+
+// createResource creates a new resource in the Logto system.
+//
+// TODO: add unit tests
+func createResource(c *Config, accessTokenResp AccessTokenResponse, tenantId, name, indicator string) error {
 	bodyData := map[string]string{
-		"tenantId":  "default",
-		"name":      "testing_resource",
-		"indicator": "https://test.io/api",
+		"tenantId":  tenantId,
+		"name":      name,
+		"indicator": indicator,
 	}
 
 	bodyBytes, err := json.Marshal(bodyData)
@@ -140,6 +156,11 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnprocessableEntity {
+		log.Printf("Unprocessable Entity : already created resource.\nThe request were ignored. Please check your Logto dashboard.\nFull response details: %v", resp)
+		return nil
+	}
+
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("unexpected status code: %v\nResponse: %v", resp.StatusCode, resp)
 	}
@@ -155,10 +176,6 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 		return err
 	}
 	fmt.Print("Created API Resource: ", result)
-
-	// Provision roles
-
-	// Provision users
 
 	return nil
 }
