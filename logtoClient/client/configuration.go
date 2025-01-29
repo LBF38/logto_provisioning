@@ -93,7 +93,7 @@ func NewConfiguration() *Configuration {
 		Debug:            false,
 		Servers:          ServerConfigurations{
 			{
-				URL: "http://localhost:3001/api",
+				URL: "http://localhost:3001",
 				Description: "Logto endpoint address.",
 			},
 		},
