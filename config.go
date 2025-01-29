@@ -121,6 +121,8 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 		return err
 	}
 
+	// Create API resource scope
+	_, err = createResourceScope(c, createdResource, accessTokenResp, "", "")
 	if err != nil {
 		return err
 	}
@@ -130,6 +132,48 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	// Provision users
 
 	return nil
+}
+
+func createResourceScope(c *Config, createdResource ResourceWithScopes, accessTokenResp AccessTokenResponse, name, description string) (Scope, error) {
+	bodyParams := map[string]string{
+		"name":        name,
+		"description": description,
+	}
+
+	jsonBody, err := json.Marshal(bodyParams)
+	if err != nil {
+		return Scope{}, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.Logto.Url+"/api/resources/"+createdResource.Id+"/scopes", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return Scope{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", accessTokenResp.TokenType+" "+accessTokenResp.AccessToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return Scope{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return Scope{}, fmt.Errorf("create API resource scope: unexpected status code %v\nFull response details: %v", resp.StatusCode, resp)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return Scope{}, err
+	}
+
+	var result Scope
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return Scope{}, err
+	}
+	fmt.Println("Created API resource scope: ", result)
+	return result, nil
 }
 
 type Resource struct {
