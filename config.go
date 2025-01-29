@@ -127,9 +127,84 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 
 	// Provision roles
 
+	// Create a role
+	for _, role := range c.Roles {
+		for role_name, resources := range role {
+			// TODO: check resources and get scopeIds.
+			fmt.Println("wanted resources scopes: ", resources, " for role name: ", role_name)
+
+			createdRole, err := createRole(c, accessTokenResp, role_name, "default description", nil)
+			if err != nil {
+				return err
+			}
+			fmt.Println(createdRole)
+		}
+	}
+
 	// Provision users
 
 	return nil
+}
+
+func createRole(c *Config, accessTokenResp AccessTokenResponse, name, description string, scopeIds []string) (Role, error) {
+	bodyParams := RoleBodyParams{
+		TenantId:    "default",
+		Name:        name,
+		Description: description,
+		ScopeIds:    scopeIds,
+	}
+
+	jsonBody, err := json.Marshal(bodyParams)
+	if err != nil {
+		return Role{}, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.Logto.Url+"/api/roles", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return Role{}, err
+	}
+	req.Header.Set("Authorization", accessTokenResp.TokenType+" "+accessTokenResp.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+	log.Println("create role request: ", req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return Role{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return Role{}, fmt.Errorf("create role: unexpected status code: %v\nFull response details: %v", resp.StatusCode, resp)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return Role{}, err
+	}
+
+	var result Role
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return Role{}, err
+	}
+	fmt.Println("created role: ", result)
+	return result, nil
+}
+
+type RoleBodyParams struct {
+	TenantId    string   `json:"tenantId"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ScopeIds    []string `json:"scopeIds,omitempty"`
+}
+
+type Role struct {
+	TenantId    string `json:"tenantId"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Type        string `json:"type"`
+	IsDefault   bool   `json:"isDefault"`
 }
 
 func createResourceScope(c *Config, createdResource ResourceWithScopes, accessTokenResp AccessTokenResponse, name, description string) (Scope, error) {
