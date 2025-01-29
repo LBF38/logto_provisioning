@@ -108,23 +108,21 @@ func (c *Config) FetchAccessTokenResponse() (AccessTokenResponse, error) {
 
 func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	// Provision resources
-	// for _, resource := range c.Resources {
-	// 	for endpoint, scopes := range resource.Endpoints {
-	// 		// TODO: create resource for each endpoint
-	// 		// TODO: create scopes for each resource
-	// 	}
-	// }
-
-	// Create an API resource
-	createdResource, err := createResource(c, accessTokenResp, "default", "testing api", "http://api.test.io")
-	if err != nil {
-		return err
-	}
-
-	// Create API resource scope
-	_, err = createResourceScope(c, createdResource, accessTokenResp, "", "")
-	if err != nil {
-		return err
+	for _, resource := range c.Resources {
+		for endpoint, scopes := range resource.Endpoints {
+			// Create an API resource for each endpoint
+			createdResource, err := createResource(c, accessTokenResp, "default", endpoint, resource.BaseUrl+endpoint)
+			if err != nil {
+				return err
+			}
+			// Create API resource scope for each scope
+			for _, scope := range scopes {
+				_, err = createResourceScope(c, createdResource, accessTokenResp, scope, "default description")
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	// Provision roles
@@ -251,8 +249,3 @@ func createResource(c *Config, accessTokenResp AccessTokenResponse, tenantId, na
 
 	return result, nil
 }
-
-// func (c *Config) provisionResource(accessTokenResp AccessTokenResponse, resource LogtoResource) error {
-
-// 	return nil
-// }
