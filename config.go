@@ -116,7 +116,11 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	// }
 
 	// Create an API resource
-	err := createResource(c, accessTokenResp, "", "", "")
+	createdResource, err := createResource(c, accessTokenResp, "default", "testing api", "http://api.test.io")
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		return err
 	}
@@ -128,10 +132,33 @@ func (c *Config) ProvisionLogto(accessTokenResp AccessTokenResponse) error {
 	return nil
 }
 
+type Resource struct {
+	TenantId       string `json:"tenant_id"`
+	Id             string `json:"id"`
+	Name           string `json:"name"`
+	Indicator      string `json:"indicator"`
+	IsDefault      bool   `json:"isDefault"`
+	AccessTokenTtl int    `json:"accessTokenTtl"`
+}
+
+type ResourceWithScopes struct {
+	Resource
+	Scopes []Scope `json:"scopes"`
+}
+
+type Scope struct {
+	TenantId    string `json:"tenant_id"`
+	Id          string `json:"id"`
+	ResourceId  string `json:"resourceId"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	CreatedAt   int    `json:"createdAt"`
+}
+
 // createResource creates a new resource in the Logto system.
 //
 // TODO: add unit tests
-func createResource(c *Config, accessTokenResp AccessTokenResponse, tenantId, name, indicator string) error {
+func createResource(c *Config, accessTokenResp AccessTokenResponse, tenantId, name, indicator string) (ResourceWithScopes, error) {
 	bodyData := map[string]string{
 		"tenantId":  tenantId,
 		"name":      name,
@@ -140,44 +167,45 @@ func createResource(c *Config, accessTokenResp AccessTokenResponse, tenantId, na
 
 	bodyBytes, err := json.Marshal(bodyData)
 	if err != nil {
-		return err
+		return ResourceWithScopes{}, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, c.Logto.Url+"/api/resources", bytes.NewBuffer(bodyBytes))
 	if err != nil {
-		return err
+		return ResourceWithScopes{}, err
 	}
 	req.Header.Set("Authorization", accessTokenResp.TokenType+" "+accessTokenResp.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return ResourceWithScopes{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnprocessableEntity {
 		log.Printf("Unprocessable Entity : already created resource.\nThe request were ignored. Please check your Logto dashboard.\nFull response details: %v", resp)
-		return nil
+		// TODO: better handle this case.
+		return ResourceWithScopes{}, nil
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("unexpected status code: %v\nResponse: %v", resp.StatusCode, resp)
+		return ResourceWithScopes{}, fmt.Errorf("unexpected status code: %v\nResponse: %v", resp.StatusCode, resp)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return ResourceWithScopes{}, err
 	}
 
-	var result map[string]interface{}
+	var result ResourceWithScopes
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return err
+		return ResourceWithScopes{}, err
 	}
-	fmt.Print("Created API Resource: ", result)
+	fmt.Println("Created API Resource: ", result)
 
-	return nil
+	return result, nil
 }
 
 // func (c *Config) provisionResource(accessTokenResp AccessTokenResponse, resource LogtoResource) error {
