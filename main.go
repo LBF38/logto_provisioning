@@ -35,6 +35,9 @@ func main() {
 	fmt.Printf("OpenAPI configuration: %+v\n", *cfg)
 	fmt.Printf("OpenAPI client: %+v\n", *client)
 
+	// TODO: handle the logto URL defined in the provisioning file.
+	// => it should be replaced in the OpenAPI servers config.
+
 	// OpenAPI OAuth2
 	token := oauth2.Token{
 		AccessToken: accessTokenResponse.AccessToken,
@@ -129,4 +132,65 @@ func createRole(ctx context.Context, role_name string, scopes []string) (*openap
 	}
 
 	return resp, nil
+}
+
+// Remove all created objects in Logto instance
+// such as API resources, Roles, Users and Organizations.
+func cleanLogtoInstance(ctx context.Context) error {
+
+	resourcesResp, _, err := client.ResourcesAPI.ListResources(ctx).Execute()
+	if err != nil {
+		return fmt.Errorf("Resources cleaning error: %v", err)
+	}
+
+	for _, resource := range resourcesResp {
+		if resource.Id == "management-api" {
+			// This is the default Logto Management API
+			// We can't delete it as it's locked.
+			continue
+		}
+		_, err = client.ResourcesAPI.DeleteResource(ctx, resource.Id).Execute()
+		if err != nil {
+			return fmt.Errorf("Resources cleaning error: %v", err)
+		}
+	}
+
+	rolesResp, r, err := client.RolesAPI.ListRoles(ctx).Execute()
+	if err != nil && r.StatusCode >= 300 {
+		return fmt.Errorf("Roles cleaning error: %v", err)
+	}
+
+	for _, role := range rolesResp {
+		_, err = client.RolesAPI.DeleteRole(ctx, role.Id).Execute()
+	}
+	if err != nil {
+		return fmt.Errorf("Roles cleaning error: %v", err)
+	}
+
+	usersResp, _, err := client.UsersAPI.ListUsers(ctx).Execute()
+	if err != nil {
+		return fmt.Errorf("Users cleaning error: %v", err)
+	}
+
+	for _, user := range usersResp {
+		_, err = client.UsersAPI.DeleteUser(ctx, user.Id).Execute()
+		if err != nil {
+			return fmt.Errorf("Users cleaning error: %v", err)
+		}
+	}
+
+	orgsResp, _, err := client.OrganizationsAPI.ListOrganizations(ctx).Execute()
+	if err != nil {
+		return fmt.Errorf("Users cleaning error: %v", err)
+	}
+
+	for _, org := range orgsResp {
+		_, err = client.OrganizationsAPI.DeleteOrganization(ctx, org.Id).Execute()
+		if err != nil {
+			return fmt.Errorf("Users cleaning error: %v", err)
+		}
+	}
+
+	return nil
+
 }
