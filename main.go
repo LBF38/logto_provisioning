@@ -44,18 +44,23 @@ func main() {
 
 	//! Provision Logto instance
 	// Resources provisioning
+
+	var resourceScopesMap = make(map[string]map[string]string)
 	for _, resource := range config.Resources {
 		for endpoint, scopes := range resource.Endpoints {
-			createdResource, err := createResource(auth, endpoint, resource.BaseUrl+endpoint)
+			indicator := resource.BaseUrl + endpoint
+			createdResource, err := createResource(auth, endpoint, indicator)
 			if err != nil {
 				log.Fatalf("Resources provisioning: %v", err)
 			}
+			resourceScopesMap[indicator] = make(map[string]string)
 			for _, scope := range scopes {
 				createdScope, err := createResourceScope(auth, scope, "description", createdResource)
 				if err != nil {
 					log.Fatalf("Resources provisioning: %v", err)
 				}
 				fmt.Println(createdScope)
+				resourceScopesMap[indicator][scope] = createdScope.Id
 			}
 		}
 	}
@@ -64,8 +69,16 @@ func main() {
 	for _, role := range config.Roles {
 		for role_name, resources := range role {
 			fmt.Println(resources)
-			// TODO: link each role w/ resources scopes
-			createdRole, err := createRole(auth, role_name, nil)
+			// DONE: link each role w/ resources scopes
+			scopeIds := []string{}
+			for indicator, scopes := range resources {
+				for _, scope := range scopes {
+					scopeIds = append(scopeIds, resourceScopesMap[indicator][scope])
+				}
+			}
+			fmt.Println("scopeIds: ", scopeIds)
+
+			createdRole, err := createRole(auth, role_name, scopeIds)
 			if err != nil {
 				log.Fatalf("Roles provisioning: %v", err)
 			}
