@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.1
 servers:
-- url: https://[tenant_id].logto.app/
+- url: http://default.logto.app
   description: Logto endpoint address.
 info:
   title: Logto API references
@@ -31,6 +31,7 @@ paths:
               - Traditional
               - MachineToMachine
               - Protected
+              - SAML
           - type: string
             enum:
             - Native
@@ -38,6 +39,7 @@ paths:
             - Traditional
             - MachineToMachine
             - Protected
+            - SAML
         description: An array of application types to filter applications.
       - name: excludeRoleId
         in: query
@@ -130,6 +132,7 @@ paths:
                       - Traditional
                       - MachineToMachine
                       - Protected
+                      - SAML
                     oidcClientMetadata:
                       type: object
                       required:
@@ -315,6 +318,7 @@ paths:
                   - Traditional
                   - MachineToMachine
                   - Protected
+                  - SAML
                 oidcClientMetadata:
                   type: object
                   required:
@@ -425,6 +429,7 @@ paths:
                     - Traditional
                     - MachineToMachine
                     - Protected
+                    - SAML
                   oidcClientMetadata:
                     type: object
                     required:
@@ -637,6 +642,7 @@ paths:
                     - Traditional
                     - MachineToMachine
                     - Protected
+                    - SAML
                   oidcClientMetadata:
                     type: object
                     required:
@@ -930,6 +936,7 @@ paths:
                     - Traditional
                     - MachineToMachine
                     - Protected
+                    - SAML
                   oidcClientMetadata:
                     type: object
                     required:
@@ -1652,6 +1659,7 @@ paths:
                     - Traditional
                     - MachineToMachine
                     - Protected
+                    - SAML
                   oidcClientMetadata:
                     type: object
                     required:
@@ -7582,6 +7590,9 @@ paths:
                 - passwordPolicy
                 - mfa
                 - singleSignOnEnabled
+                - supportEmail
+                - supportWebsiteUrl
+                - unknownSessionRedirectUrl
                 properties:
                   tenantId:
                     type: string
@@ -7934,9 +7945,27 @@ paths:
                         enum:
                         - UserControlled
                         - Mandatory
+                        - PromptOnlyAtSignIn
+                        - PromptAtSignInAndSignUp
+                        - NoPrompt
                     description: MFA settings
                   singleSignOnEnabled:
                     type: boolean
+                  supportEmail:
+                    nullable: true
+                    type: string
+                    description: The support email address to display on the error
+                      pages.
+                  supportWebsiteUrl:
+                    nullable: true
+                    type: string
+                    description: The support website URL to display on the error pages.
+                  unknownSessionRedirectUrl:
+                    nullable: true
+                    type: string
+                    description: The fallback URL to redirect users when the sign-in
+                      session does not exist or unknown. Client should initiates a
+                      new authentication flow after the redirection.
         '401':
           description: Unauthorized
         '403':
@@ -8303,6 +8332,9 @@ paths:
                       enum:
                       - UserControlled
                       - Mandatory
+                      - PromptOnlyAtSignIn
+                      - PromptAtSignInAndSignUp
+                      - NoPrompt
                   description: MFA settings
                 singleSignOnEnabled:
                   type: boolean
@@ -8320,6 +8352,32 @@ paths:
                     format: url
                   - type: string
                     format: empty
+                supportEmail:
+                  oneOf:
+                  - nullable: true
+                    type: string
+                    format: email
+                  - type: string
+                    format: empty
+                  description: The support email address to display on the error pages.
+                supportWebsiteUrl:
+                  oneOf:
+                  - nullable: true
+                    type: string
+                    format: url
+                  - type: string
+                    format: empty
+                  description: The support website URL to display on the error pages.
+                unknownSessionRedirectUrl:
+                  oneOf:
+                  - nullable: true
+                    type: string
+                    format: url
+                  - type: string
+                    format: empty
+                  description: The fallback URL to redirect users when the sign-in
+                    session does not exist or unknown. Client should initiate a new
+                    authentication flow after the redirection.
       responses:
         '200':
           description: Updated default sign-in experience settings.
@@ -8347,6 +8405,9 @@ paths:
                 - passwordPolicy
                 - mfa
                 - singleSignOnEnabled
+                - supportEmail
+                - supportWebsiteUrl
+                - unknownSessionRedirectUrl
                 properties:
                   tenantId:
                     type: string
@@ -8682,8 +8743,20 @@ paths:
                         enum:
                         - UserControlled
                         - Mandatory
+                        - PromptOnlyAtSignIn
+                        - PromptAtSignInAndSignUp
+                        - NoPrompt
                   singleSignOnEnabled:
                     type: boolean
+                  supportEmail:
+                    nullable: true
+                    type: string
+                  supportWebsiteUrl:
+                    nullable: true
+                    type: string
+                  unknownSessionRedirectUrl:
+                    nullable: true
+                    type: string
         '400':
           description: Bad request. Invalid data provided.
         '401':
@@ -11018,17 +11091,51 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-              - type
-              properties:
-                type:
-                  oneOf:
-                  - type: string
+              oneOf:
+              - type: object
+                required:
+                - type
+                properties:
+                  type:
+                    type: string
                     format: '"Totp"'
-                  - type: string
+                  secret:
+                    type: string
+              - type: object
+                required:
+                - type
+                properties:
+                  type:
+                    type: string
                     format: '"BackupCode"'
-                  description: The type of MFA verification to create.
+                  codes:
+                    type: array
+                    items:
+                      type: string
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    description: The type of MFA verification to create.
+                  secret:
+                    type: string
+                    description: The secret for the MFA verification, if not provided,
+                      a new secret will be generated.
+                required:
+                - type
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    description: The type of MFA verification to create.
+                  codes:
+                    type: array
+                    items:
+                      type: string
+                    description: The backup codes for the MFA verification, if not
+                      provided, a new group of backup codes will be generated.
+                required:
+                - type
       responses:
         '200':
           description: The MFA verification that was created.
@@ -11652,6 +11759,7 @@ paths:
                             - Traditional
                             - MachineToMachine
                             - Protected
+                            - SAML
         '400':
           description: Bad Request
         '401':
@@ -12241,6 +12349,7 @@ paths:
                       - Traditional
                       - MachineToMachine
                       - Protected
+                      - SAML
                     oidcClientMetadata:
                       type: object
                       required:
@@ -17382,6 +17491,7 @@ paths:
                       - Traditional
                       - MachineToMachine
                       - Protected
+                      - SAML
                     oidcClientMetadata:
                       type: object
                       required:
@@ -18902,6 +19012,257 @@ paths:
           description: The user does not exist.
       summary: Create a new subject token.
       description: Create a new subject token for the use of impersonating the user.
+  "/api/account-center":
+    get:
+      operationId: GetAccountCenterSettings
+      tags:
+      - Account center
+      parameters: []
+      responses:
+        '200':
+          description: Account center settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - tenantId
+                - id
+                - enabled
+                - fields
+                properties:
+                  tenantId:
+                    type: string
+                    maxLength: 21
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 21
+                  enabled:
+                    type: boolean
+                  fields:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      avatar:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      profile:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      email:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      phone:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      password:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      username:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      social:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      customData:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Get account center settings
+      description: Get the account center settings.
+    patch:
+      operationId: UpdateAccountCenterSettings
+      tags:
+      - Account center
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  description: Enable or disable the account API.
+                fields:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    avatar:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    profile:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    email:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    phone:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    password:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    username:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    social:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                    customData:
+                      type: string
+                      enum:
+                      - 'Off'
+                      - ReadOnly
+                      - Edit
+                  description: The fields settings for the account API.
+      responses:
+        '200':
+          description: Updated account center settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - tenantId
+                - id
+                - enabled
+                - fields
+                properties:
+                  tenantId:
+                    type: string
+                    maxLength: 21
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 21
+                  enabled:
+                    type: boolean
+                  fields:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      avatar:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      profile:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      email:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      phone:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      password:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      username:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      social:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+                      customData:
+                        type: string
+                        enum:
+                        - 'Off'
+                        - ReadOnly
+                        - Edit
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Update account center settings
+      description: Update the account center settings with the provided settings.
   "/api/.well-known/sign-in-exp":
     get:
       operationId: GetSignInExperienceConfig
@@ -18945,6 +19306,9 @@ paths:
                 - passwordPolicy
                 - mfa
                 - singleSignOnEnabled
+                - supportEmail
+                - supportWebsiteUrl
+                - unknownSessionRedirectUrl
                 - socialConnectors
                 - ssoConnectors
                 - forgotPassword
@@ -19284,8 +19648,20 @@ paths:
                         enum:
                         - UserControlled
                         - Mandatory
+                        - PromptOnlyAtSignIn
+                        - PromptAtSignInAndSignUp
+                        - NoPrompt
                   singleSignOnEnabled:
                     type: boolean
+                  supportEmail:
+                    nullable: true
+                    type: string
+                  supportWebsiteUrl:
+                    nullable: true
+                    type: string
+                  unknownSessionRedirectUrl:
+                    nullable: true
+                    type: string
                   socialConnectors:
                     type: array
                     items:
@@ -19447,6 +19823,9 @@ paths:
                 - passwordPolicy
                 - mfa
                 - singleSignOnEnabled
+                - supportEmail
+                - supportWebsiteUrl
+                - unknownSessionRedirectUrl
                 - socialConnectors
                 - ssoConnectors
                 - forgotPassword
@@ -19786,8 +20165,20 @@ paths:
                         enum:
                         - UserControlled
                         - Mandatory
+                        - PromptOnlyAtSignIn
+                        - PromptAtSignInAndSignUp
+                        - NoPrompt
                   singleSignOnEnabled:
                     type: boolean
+                  supportEmail:
+                    nullable: true
+                    type: string
+                  supportWebsiteUrl:
+                    nullable: true
+                    type: string
+                  unknownSessionRedirectUrl:
+                    nullable: true
+                    type: string
                   socialConnectors:
                     type: array
                     items:
@@ -19972,7 +20363,6 @@ paths:
             schema:
               type: object
               required:
-              - RelayState
               - SAMLResponse
               properties:
                 RelayState:
@@ -21572,6 +21962,943 @@ paths:
       summary: Get enabled SSO connectors by the given email's domain
       description: Extract the email domain from the provided email address. Returns
         all the enabled SSO connectors that match the email domain.
+  "/api/my-account":
+    get:
+      operationId: GetProfile
+      tags:
+      - My account
+      parameters: []
+      responses:
+        '200':
+          description: The profile was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 12
+                  username:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  primaryEmail:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  primaryPhone:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  name:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  avatar:
+                    nullable: true
+                    type: string
+                    maxLength: 2048
+                  customData:
+                    type: object
+                    description: arbitrary
+                  identities:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - userId
+                      properties:
+                        userId:
+                          type: string
+                        details:
+                          type: object
+                          description: arbitrary
+                  lastSignInAt:
+                    nullable: true
+                    type: number
+                  createdAt:
+                    type: number
+                  updatedAt:
+                    type: number
+                  profile:
+                    type: object
+                    properties:
+                      familyName:
+                        type: string
+                      givenName:
+                        type: string
+                      middleName:
+                        type: string
+                      nickname:
+                        type: string
+                      preferredUsername:
+                        type: string
+                      profile:
+                        type: string
+                      website:
+                        type: string
+                      gender:
+                        type: string
+                      birthdate:
+                        type: string
+                      zoneinfo:
+                        type: string
+                      locale:
+                        type: string
+                      address:
+                        type: object
+                        properties:
+                          formatted:
+                            type: string
+                          streetAddress:
+                            type: string
+                          locality:
+                            type: string
+                          region:
+                            type: string
+                          postalCode:
+                            type: string
+                          country:
+                            type: string
+                  applicationId:
+                    nullable: true
+                    type: string
+                    maxLength: 21
+                  isSuspended:
+                    type: boolean
+                  hasPassword:
+                    type: boolean
+                  ssoIdentities:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - tenantId
+                      - id
+                      - userId
+                      - issuer
+                      - identityId
+                      - detail
+                      - createdAt
+                      - ssoConnectorId
+                      properties:
+                        tenantId:
+                          type: string
+                          maxLength: 21
+                        id:
+                          type: string
+                          minLength: 1
+                          maxLength: 21
+                        userId:
+                          type: string
+                          minLength: 1
+                          maxLength: 12
+                        issuer:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                        identityId:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+                        detail:
+                          type: object
+                          description: arbitrary
+                        createdAt:
+                          type: number
+                        ssoConnectorId:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Get profile
+      description: Get profile for the user.
+    patch:
+      operationId: UpdateProfile
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  nullable: true
+                  type: string
+                  description: The new name for the user.
+                avatar:
+                  nullable: true
+                  type: string
+                  format: url
+                  description: The new avatar for the user, must be a URL.
+                username:
+                  nullable: true
+                  type: string
+                  format: regex
+                  pattern: "/^[A-Z_a-z]\\w*$/"
+                  description: The new username for the user, must be a valid username
+                    and unique.
+      responses:
+        '200':
+          description: The profile was updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 12
+                  username:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  primaryEmail:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  primaryPhone:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  name:
+                    nullable: true
+                    type: string
+                    maxLength: 128
+                  avatar:
+                    nullable: true
+                    type: string
+                    maxLength: 2048
+                  customData:
+                    type: object
+                    description: arbitrary
+                  identities:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - userId
+                      properties:
+                        userId:
+                          type: string
+                        details:
+                          type: object
+                          description: arbitrary
+                  lastSignInAt:
+                    nullable: true
+                    type: number
+                  createdAt:
+                    type: number
+                  updatedAt:
+                    type: number
+                  profile:
+                    type: object
+                    properties:
+                      familyName:
+                        type: string
+                      givenName:
+                        type: string
+                      middleName:
+                        type: string
+                      nickname:
+                        type: string
+                      preferredUsername:
+                        type: string
+                      profile:
+                        type: string
+                      website:
+                        type: string
+                      gender:
+                        type: string
+                      birthdate:
+                        type: string
+                      zoneinfo:
+                        type: string
+                      locale:
+                        type: string
+                      address:
+                        type: object
+                        properties:
+                          formatted:
+                            type: string
+                          streetAddress:
+                            type: string
+                          locality:
+                            type: string
+                          region:
+                            type: string
+                          postalCode:
+                            type: string
+                          country:
+                            type: string
+                  applicationId:
+                    nullable: true
+                    type: string
+                    maxLength: 21
+                  isSuspended:
+                    type: boolean
+                  hasPassword:
+                    type: boolean
+                  ssoIdentities:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - tenantId
+                      - id
+                      - userId
+                      - issuer
+                      - identityId
+                      - detail
+                      - createdAt
+                      - ssoConnectorId
+                      properties:
+                        tenantId:
+                          type: string
+                          maxLength: 21
+                        id:
+                          type: string
+                          minLength: 1
+                          maxLength: 21
+                        userId:
+                          type: string
+                          minLength: 1
+                          maxLength: 12
+                        issuer:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                        identityId:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+                        detail:
+                          type: object
+                          description: arbitrary
+                        createdAt:
+                          type: number
+                        ssoConnectorId:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+        '400':
+          description: The request body is invalid.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: The username is already in use.
+      summary: Update profile
+      description: Update profile for the user, only the fields that are passed in
+        will be updated.
+  "/api/my-account/profile":
+    patch:
+      operationId: UpdateOtherProfile
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                familyName:
+                  type: string
+                  description: The new family name for the user.
+                givenName:
+                  type: string
+                  description: The new given name for the user.
+                middleName:
+                  type: string
+                  description: The new middle name for the user.
+                nickname:
+                  type: string
+                  description: The new nickname for the user.
+                preferredUsername:
+                  type: string
+                  description: The new preferred username for the user.
+                profile:
+                  type: string
+                  description: The new profile for the user.
+                website:
+                  type: string
+                  description: The new website for the user.
+                gender:
+                  type: string
+                  description: The new gender for the user.
+                birthdate:
+                  type: string
+                  description: The new birthdate for the user.
+                zoneinfo:
+                  type: string
+                  description: The new zoneinfo for the user.
+                locale:
+                  type: string
+                  description: The new locale for the user.
+                address:
+                  type: object
+                  properties:
+                    formatted:
+                      type: string
+                    streetAddress:
+                      type: string
+                    locality:
+                      type: string
+                    region:
+                      type: string
+                    postalCode:
+                      type: string
+                    country:
+                      type: string
+                  description: The new address for the user.
+      responses:
+        '200':
+          description: The profile was updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  familyName:
+                    type: string
+                  givenName:
+                    type: string
+                  middleName:
+                    type: string
+                  nickname:
+                    type: string
+                  preferredUsername:
+                    type: string
+                  profile:
+                    type: string
+                  website:
+                    type: string
+                  gender:
+                    type: string
+                  birthdate:
+                    type: string
+                  zoneinfo:
+                    type: string
+                  locale:
+                    type: string
+                  address:
+                    type: object
+                    properties:
+                      formatted:
+                        type: string
+                      streetAddress:
+                        type: string
+                      locality:
+                        type: string
+                      region:
+                        type: string
+                      postalCode:
+                        type: string
+                      country:
+                        type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Update other profile
+      description: Update other profile for the user, only the fields that are passed
+        in will be updated, to update the address, the user must have the address
+        scope.
+  "/api/my-account/password":
+    post:
+      operationId: UpdatePassword
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - password
+              properties:
+                password:
+                  type: string
+                  minLength: 1
+                  description: The new password for the user.
+      responses:
+        '204':
+          description: The password was updated successfully.
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Permission denied, the verification record is invalid.
+        '422':
+          description: Unprocessable Content
+      summary: Update password
+      description: Update password for the user, a logto-verification-id in header
+        is required for checking sensitive permissions.
+  "/api/my-account/primary-email":
+    post:
+      operationId: UpdatePrimaryEmail
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - newIdentifierVerificationRecordId
+              properties:
+                email:
+                  type: string
+                  format: regex
+                  pattern: "/^\\S+@\\S+\\.\\S+$/"
+                  description: The new email for the user.
+                newIdentifierVerificationRecordId:
+                  type: string
+                  description: The identifier verification record ID for the new email
+                    ownership verification.
+      responses:
+        '204':
+          description: The primary email was updated successfully.
+        '400':
+          description: The new verification record is invalid.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Permission denied, the verification record is invalid.
+      summary: Update primary email
+      description: Update primary email for the user, a logto-verification-id in header
+        is required for checking sensitive permissions, and a new identifier verification
+        record is required for the new email ownership verification.
+    delete:
+      operationId: DeletePrimaryEmail
+      tags:
+      - My account
+      parameters: []
+      responses:
+        '204':
+          description: The primary email was deleted successfully.
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Delete primary email
+      description: Delete primary email for the user, a verification-record-id in
+        header is required for checking sensitive permissions.
+  "/api/my-account/primary-phone":
+    post:
+      operationId: UpdatePrimaryPhone
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - phone
+              - newIdentifierVerificationRecordId
+              properties:
+                phone:
+                  type: string
+                  format: regex
+                  pattern: "/^\\d+$/"
+                  description: The new phone for the user.
+                newIdentifierVerificationRecordId:
+                  type: string
+                  description: The identifier verification record ID for the new phone
+                    ownership verification.
+      responses:
+        '204':
+          description: The primary phone was updated successfully.
+        '400':
+          description: The new verification record is invalid.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Permission denied, the verification record is invalid.
+      summary: Update primary phone
+      description: Update primary phone for the user, a logto-verification-id in header
+        is required for checking sensitive permissions, and a new identifier verification
+        record is required for the new phone ownership verification.
+    delete:
+      operationId: DeletePrimaryPhone
+      tags:
+      - My account
+      parameters: []
+      responses:
+        '204':
+          description: The primary phone was deleted successfully.
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Delete primary phone
+      description: Delete primary phone for the user, a verification-record-id in
+        header is required for checking sensitive permissions.
+  "/api/my-account/identities":
+    post:
+      operationId: AddUserIdentities
+      tags:
+      - My account
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - newIdentifierVerificationRecordId
+              properties:
+                newIdentifierVerificationRecordId:
+                  type: string
+                  description: The identifier verification record ID for the new social
+                    identity ownership verification.
+      responses:
+        '204':
+          description: The identity was added successfully.
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      summary: Add a user identity
+      description: Add an identity (social identity) to the user, a logto-verification-id
+        in header is required for checking sensitive permissions, and a verification
+        record for the social identity is required.
+  "/api/my-account/identities/{target}":
+    delete:
+      operationId: DeleteIdentity
+      tags:
+      - My account
+      parameters:
+      - name: target
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The identity was deleted successfully.
+        '400':
+          description: The verification record is invalid.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: The identity does not exist.
+      summary: Delete a user identity
+      description: Delete an identity (social identity) from the user, a logto-verification-id
+        in header is required for checking sensitive permissions.
+  "/api/verifications/password":
+    post:
+      operationId: CreateVerificationByPassword
+      tags:
+      - Verifications
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - password
+              properties:
+                password:
+                  type: string
+                  minLength: 1
+                  description: The password of the user.
+      responses:
+        '201':
+          description: The verification record was created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - verificationRecordId
+                - expiresAt
+                properties:
+                  verificationRecordId:
+                    type: string
+                  expiresAt:
+                    type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: The password is invalid.
+      summary: Create a record by password
+      description: Create a verification record by verifying the password.
+  "/api/verifications/verification-code":
+    post:
+      operationId: CreateVerificationByVerificationCode
+      tags:
+      - Verifications
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - identifier
+              properties:
+                identifier:
+                  type: object
+                  required:
+                  - type
+                  - value
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                      - email
+                      - phone
+                    value:
+                      type: string
+                  description: The identifier (email address or phone number) to send
+                    the verification code to.
+      responses:
+        '201':
+          description: The verification code has been successfully sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - verificationRecordId
+                - expiresAt
+                properties:
+                  verificationRecordId:
+                    type: string
+                  expiresAt:
+                    type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '501':
+          description: The connector for sending the verification code is not configured.
+      summary: Create a record by verification code
+      description: Create a verification record and send the code to the specified
+        identifier. The code verification can be used to verify the given identifier.
+  "/api/verifications/verification-code/verify":
+    post:
+      operationId: VerifyVerificationByVerificationCode
+      tags:
+      - Verifications
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - identifier
+              - verificationId
+              - code
+              properties:
+                identifier:
+                  type: object
+                  required:
+                  - type
+                  - value
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                      - email
+                      - phone
+                    value:
+                      type: string
+                  description: The identifier (email address or phone number) to verify
+                    the code against. Must match the identifier used to send the verification
+                    code.
+                verificationId:
+                  type: string
+                  description: The verification ID of the CodeVerification record.
+                code:
+                  type: string
+                  description: The verification code to be verified.
+      responses:
+        '200':
+          description: The verification code has been successfully verified.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - verificationRecordId
+                properties:
+                  verificationRecordId:
+                    type: string
+        '400':
+          description: The verification code is invalid or the maximum number of attempts
+            has been exceeded. Check the error message for details.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '501':
+          description: The connector for sending the verification code is not configured.
+      summary: Verify verification code
+      description: Verify the provided verification code against the identifier. If
+        successful, the verification record will be marked as verified.
+  "/api/verifications/social":
+    post:
+      operationId: CreateVerificationBySocial
+      tags:
+      - Verifications
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - state
+              - redirectUri
+              - connectorId
+              properties:
+                state:
+                  type: string
+                  description: A random string generated on the client side to prevent
+                    CSRF (Cross-Site Request Forgery) attacks.
+                redirectUri:
+                  type: string
+                  description: The URI to navigate back to after the user is authenticated
+                    by the connected social identity provider and has granted access
+                    to the connector.
+                connectorId:
+                  type: string
+                  description: The Logto connector ID.
+      responses:
+        '201':
+          description: Successfully created the social verification record and returned
+            the authorization URI.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - verificationRecordId
+                - authorizationUri
+                - expiresAt
+                properties:
+                  verificationRecordId:
+                    type: string
+                    description: The ID of the verification record.
+                  authorizationUri:
+                    type: string
+                    description: The authorization URI to navigate to for authentication
+                      and authorization in the connected social identity provider.
+                  expiresAt:
+                    type: string
+                    description: The expiration date and time of the verification
+                      record.
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: The connector specified by connectorId is not found.
+        '422':
+          description: The connector specified by connectorId is not a valid social
+            connector.
+      summary: Create a social verification record
+      description: Create a social verification record and return the authorization
+        URI.
+  "/api/verifications/social/verify":
+    post:
+      operationId: VerifyVerificationBySocial
+      tags:
+      - Verifications
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - connectorData
+              - verificationRecordId
+              properties:
+                connectorData:
+                  type: object
+                  description: A json object constructed from the url query params
+                    returned by the social platform. Typically it contains `code`,
+                    `state` and `redirectUri` fields.
+                verificationRecordId:
+                  type: string
+                verificationId:
+                  description: The verification ID of the SocialVerification record.
+      responses:
+        '200':
+          description: The social verification record has been successfully verified
+            and the user information has been saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - verificationRecordId
+                properties:
+                  verificationRecordId:
+                    type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Content
+      summary: Verify a social verification record
+      description: Verify a social verification record by callback connector data,
+        and save the user information to the record.
   "/api/interaction":
     put:
       tags:
@@ -21893,6 +23220,8 @@ paths:
           description: Bad Request
         '404':
           description: Not Found
+        '422':
+          description: Unprocessable Content
       security: []
     patch:
       tags:
@@ -23177,6 +24506,8 @@ components:
         type: string
       name: organizationInvitationId
 tags:
+- name: Account center
+  description: Customize your account API settings.
 - name: Applications
   description: "Application represents your registered software program or service
     that has been authorized to access user information and perform actions on behalf
@@ -23235,6 +24566,9 @@ tags:
   description: Interaction endpoints are used to manage and process interactions for
     end-users, such as sign-in experience. Interaction endpoints are legacy endpoints
     that are used internally, will be replaced with Experience endpoints instead.
+- name: My account
+  description: Account routes provide functionality for managing user profile for
+    the end user to interact directly with access tokens.
 - name: Organization applications
   description: |-
     Manage organization - application relationships. An application can be associated with one or more organizations in order to get access to the organization resources.
@@ -23313,6 +24647,9 @@ tags:
     a custom profile page in your app. See [\U0001F464 User profile](https://docs.logto.io/docs/recipes/user-profile/#optional-validate-verification-code)
     for more details.\n\nNote: Before you call the endpoints, you need to setup your
     email/SMS connector first."
+- name: Verifications
+  description: Endpoints for creating and validating verification records, which can
+    be used in Profile routes.
 - name: Well-known
   description: Well-Known routes provide information and resources that can be discovered
     by clients without the need for authentication.
