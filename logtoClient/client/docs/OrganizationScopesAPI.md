@@ -29,7 +29,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 )
 
 func main() {
@@ -95,7 +95,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 )
 
 func main() {
@@ -163,7 +163,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 )
 
 func main() {
@@ -233,7 +233,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 )
 
 func main() {
@@ -303,7 +303,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 )
 
 func main() {

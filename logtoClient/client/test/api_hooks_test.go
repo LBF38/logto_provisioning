@@ -13,7 +13,7 @@ import (
 	"context"
 	"testing"
 
-	openapiclient "github.com/lbf38/logto_provisioning"
+	openapiclient "github.com/lbf38/logto_provisioning/logtoClient/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
