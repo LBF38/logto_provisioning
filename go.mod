@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/a8m/envsubst v1.4.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

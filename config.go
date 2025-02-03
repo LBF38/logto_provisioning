@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/a8m/envsubst"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/rawbytes"
 )
 
 // Represents the struct extracted from the yaml config file
@@ -42,12 +43,24 @@ type LogtoRole map[string]map[string][]string
 
 func NewConfig(filename string) (Config, error) {
 	var k = koanf.New("::")
-	k.Load(file.Provider(filename), yaml.Parser())
+
+	data, err := envsubst.ReadFile(filename)
+	if err != nil {
+		return Config{}, err
+	}
+
+	err = k.Load(rawbytes.Provider(data), yaml.Parser())
+	if err != nil {
+		return Config{}, err
+	}
 
 	// log.Println(k.Raw())
 
 	var config Config
-	k.Unmarshal("", &config)
+	err = k.Unmarshal("", &config)
+	if err != nil {
+		return Config{}, err
+	}
 	// log.Println("config unmarshal: ", config)
 
 	return config, nil

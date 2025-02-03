@@ -1,8 +1,11 @@
 package main
 
 import (
+	"os"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewConfig(t *testing.T) {
@@ -147,4 +150,35 @@ func TestNewConfig(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Config file doesn't exist", func(t *testing.T) {
+		expectedError := "open random_file: no such file or directory"
+		_, err := NewConfig("random_file")
+
+		assert.EqualError(t, err, expectedError)
+	})
+
+	t.Run("Evaluating env vars in config file", func(t *testing.T) {
+		const want_APP_ID = "test_app_id"
+		os.Setenv("APP_ID", want_APP_ID)
+		const want_APP_SECRET = "test_app_secret"
+		os.Setenv("APP_SECRET", want_APP_SECRET)
+
+		got, err := NewConfig("testdata/config_env_vars.yaml")
+
+		if err != nil {
+			t.Errorf("Error should be nil, but got %v", err)
+		}
+
+		if got.Logto.AppID != want_APP_ID {
+			t.Errorf("got %v, want %v", got, want_APP_ID)
+		}
+
+		if got.Logto.AppSecret != want_APP_SECRET {
+			t.Errorf("got %v, want %v", got, want_APP_SECRET)
+		}
+
+		os.Unsetenv("APP_ID")
+		os.Unsetenv("APP_SECRET")
+	})
 }
