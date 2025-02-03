@@ -25,6 +25,17 @@ func main() {
 		log.Fatalf("Failed loading config file: %v\n", err)
 	}
 
+	// DONE: handle the logto URL defined in the provisioning file.
+	// => it should be replaced in the OpenAPI servers config.
+	if config.Logto.Url != "" {
+		cfg.Servers = openapi.ServerConfigurations{
+			{
+				URL:         config.Logto.Url,
+				Description: "Logto instance URL",
+			},
+		}
+	}
+
 	// Fetch access token for interacting w/ Management API
 	accessTokenResponse, err := config.FetchAccessTokenResponse()
 	if err != nil {
@@ -34,9 +45,6 @@ func main() {
 
 	fmt.Printf("OpenAPI configuration: %+v\n", *cfg)
 	fmt.Printf("OpenAPI client: %+v\n", *client)
-
-	// TODO: handle the logto URL defined in the provisioning file.
-	// => it should be replaced in the OpenAPI servers config.
 
 	// OpenAPI OAuth2
 	token := oauth2.Token{
