@@ -59,3 +59,17 @@ organizations: # WIP
     acme_inc:
         - john_doe
 ```
+
+## Dev
+
+### OpenAPI Generator
+
+To automatically generate the Logto client based on the OpenAPI spec, this project uses [OpenAPI Generator CLI](https://openapi-generator.tech).
+
+To update the client, simply run the following cmd:
+
+```bash
+pnpx @openapitools/openapi-generator-cli generate -i ./logtoClient/swagger_oss.json -g go -o ./logtoClient/client/ --skip-validate-spec --additional-properties=withGoMod=false,useDefaultValuesForRequiredVars=true
+```
+
+Before hand, you might download the latest OpenAPI spec (`swagger.json`) from the Logto instance.
