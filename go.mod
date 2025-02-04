@@ -22,8 +22,8 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 )
