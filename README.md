@@ -73,3 +73,18 @@ pnpx @openapitools/openapi-generator-cli generate -i ./logtoClient/swagger_oss.j
 ```
 
 Before hand, you might download the latest OpenAPI spec (`swagger.json`) from the Logto instance.
+
+### Logto instance
+
+For dev setup, run the following to try the tool:
+
+```bash
+docker compose -f compose.logto.yaml up -d
+```
+
+It launches a Logto OSS instance for trying the provisioning on a fresh instance.
+
+For ref, some creds used on the Admin console:
+
+- Username: `admin`
+- Password: `VeryLongPassword123`
