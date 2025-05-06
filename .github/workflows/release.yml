@@ -37,16 +37,20 @@ jobs:
         with:
           go-version: stable
       - name: Check new version using svu
+        id: svu
         run: |
           go install github.com/caarlos0/svu/v3@latest
           NEXT_VERSION=$(svu next)
           CURRENT_VERSION=$(svu current)
           if [ "$NEXT_VERSION" == "$CURRENT_VERSION" ]; then
+            echo "new_version=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+          echo "new_version=true" >> $GITHUB_OUTPUT
           git tag "$NEXT_VERSION"
           git push --tags
       - name: Run GoReleaser
+        if: ${{steps.svu.outputs.new_version == true}}
         uses: goreleaser/goreleaser-action@v6
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
