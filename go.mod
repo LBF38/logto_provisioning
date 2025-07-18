@@ -6,7 +6,7 @@ require (
 	github.com/a8m/envsubst v1.4.2
 	github.com/knadh/koanf v1.5.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/oauth2 v0.27.0
 	gopkg.in/validator.v2 v2.0.1
 )
 
@@ -19,10 +19,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	google.golang.org/appengine v1.4.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 )
