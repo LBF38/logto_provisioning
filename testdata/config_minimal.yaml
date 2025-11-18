@@ -4,14 +4,15 @@ logto:
     appSecret: APP_SECRET # same as APP_ID. => Better defined in env vars.
 resources:
   - baseUrl: https://api.store.io
-    /orders:
-      - read:order
-      - write:order
-      - delete:order
-    /products:
-      - read:product
-      - write:product
-      - delete:product
+    endpoints:
+      /orders:
+        - read:order
+        - write:order
+        - delete:order
+      /products:
+        - read:product
+        - write:product
+        - delete:product
 roles:
   order_admin:
     # the resources/permissions attributions are autocompleted from above definition in resources.

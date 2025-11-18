@@ -1,23 +1,47 @@
 package main
 
+import (
+	"os"
+
+	"gopkg.in/yaml.v3"
+)
+
+type Config struct {
+	Logto     LogtoConfig     `yaml:"logto"`
+	Resources []Resource      `yaml:"resources"`
+	Roles     map[string]Role `yaml:"roles"`
+}
+
 type LogtoConfig struct {
-	url        string
-	app_id     string
-	app_secret string
-	resources  []LogtoResource
-	roles      []LogtoRole
+	URL       string `yaml:"url"`
+	AppID     string `yaml:"appID"`
+	AppSecret string `yaml:"appSecret"`
 }
 
-type LogtoResource struct {
-	name        string
-	permissions []string
+type Resource struct {
+	BaseURL   string              `yaml:"baseUrl"`
+	Endpoints map[string]Endpoint `yaml:"endpoints"`
 }
 
-type LogtoRole struct {
-	name        string
-	permissions []string
+type Endpoint struct {
+	Permissions []string `yaml:"permissions"`
 }
 
-func NewConfig(filename string) (LogtoConfig, error) {
-	return LogtoConfig{}, nil
+type Role struct {
+	Permissions map[string][]string `yaml:",inline"`
+}
+
+func NewConfig(filename string) (Config, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return Config{}, err
+	}
+
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
 }
