@@ -8,19 +8,19 @@ import (
 func TestNewConfig(t *testing.T) {
 	got, err := NewConfig("testdata/config_minimal.yaml")
 	want := LogtoConfig{
-		url:        "https://[tenant-id].logto.app/api",
-		app_id:     "APP_ID",
-		app_secret: "APP_SECRET",
-		resources: []LogtoResource{
+		Url:        "https://[tenant-id].logto.app/api",
+		App_id:     "APP_ID",
+		App_secret: "APP_SECRET",
+		Resources: []LogtoResource{
 			{
-				name:        "https://api.store.io/orders",
-				permissions: []string{"read:order", "write:order", "delete:order"},
+				Name:        "https://api.store.io/orders",
+				Permissions: []string{"read:order", "write:order", "delete:order"},
 			},
 		},
-		roles: []LogtoRole{
+		Roles: []LogtoRole{
 			{
-				name:        "order_admin",
-				permissions: []string{"read:order", "write:order", "delete:order"},
+				Name:        "order_admin",
+				Permissions: []string{"read:order", "write:order", "delete:order"},
 			},
 		},
 	}
