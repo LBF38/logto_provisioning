@@ -1,6 +1,6 @@
 module github.com/lbf38/logto_provisioning
 
-go 1.23.0
+go 1.25.0
 
 require (
 	github.com/a8m/envsubst v1.4.2
@@ -22,7 +22,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 )
